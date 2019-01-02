@@ -9,6 +9,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -69,45 +70,51 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setBar(int power){
+    public void setBar(int power) {
 
-       View bar = findViewById(R.id.powerBar);
-       LinearLayout vlBar = findViewById(R.id.vlBar);
+        View bar = findViewById(R.id.powerBar);
+        LinearLayout vlBar = findViewById(R.id.vlBar);
 
-        if(power <=-120){
+        float size = convertDpToPixel(38f,this);
+
+        if (power <= -120) {
             bar.setBackgroundColor(getColor(R.color.color1));
-            vlBar.getLayoutParams().height=38;
-        } else if(power <=-115){
+            vlBar.getLayoutParams().height = (int) size;
+        } else if (power <= -115) {
             bar.setBackgroundColor(getColor(R.color.color2));
-            vlBar.getLayoutParams().height=38*2;
-        } else if(power <=-110){
+            vlBar.getLayoutParams().height = (int) size * 2;
+        } else if (power <= -110) {
             bar.setBackgroundColor(getColor(R.color.color3));
-            vlBar.getLayoutParams().height=38*3;
-        } else if(power <=-105){
+            vlBar.getLayoutParams().height = (int) size * 3;
+        } else if (power <= -105) {
             bar.setBackgroundColor(getColor(R.color.color4));
-            vlBar.getLayoutParams().height=38*4;
-        } else if(power <=-100){
+            vlBar.getLayoutParams().height = (int) size * 4;
+        } else if (power <= -100) {
             bar.setBackgroundColor(getColor(R.color.color5));
-            vlBar.getLayoutParams().height=38*5;
-        } else if(power <=-95){
+            vlBar.getLayoutParams().height = (int) size * 5;
+        } else if (power <= -95) {
             bar.setBackgroundColor(getColor(R.color.color6));
-            vlBar.getLayoutParams().height=38*6;
-        } else if(power <=-90){
+            vlBar.getLayoutParams().height = (int) size * 6;
+        } else if (power <= -90) {
             bar.setBackgroundColor(getColor(R.color.color7));
-            vlBar.getLayoutParams().height=38*7;
-        } else if(power <=-85){
+            vlBar.getLayoutParams().height = (int) size * 7;
+        } else if (power <= -85) {
             bar.setBackgroundColor(getColor(R.color.color8));
-            vlBar.getLayoutParams().height=60*8;
-        } else if(power <=-80){
+            vlBar.getLayoutParams().height = (int) size * 8;
+        } else if (power <= -80) {
             bar.setBackgroundColor(getColor(R.color.color9));
-            vlBar.getLayoutParams().height=60*9;
-        } else if(power <=-0){
+            vlBar.getLayoutParams().height = (int) size * 9;
+        } else if (power <= -0) {
             bar.setBackgroundColor(getColor(R.color.color10));
-            vlBar.getLayoutParams().height=60*10;
+            vlBar.getLayoutParams().height = (int) size * 10;
         } else {
             resetBar();
         }
         vlBar.requestLayout();
+    }
+
+    public static float convertDpToPixel(float dp, Context context){
+        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     public void CellInfoState() {
