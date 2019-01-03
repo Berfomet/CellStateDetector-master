@@ -1,4 +1,4 @@
-package com.example.marcoycaza.cell_state_detector;
+package com.example.marcoycaza.cell_state_detector.Service;
 
 public class CellRegistered {
 

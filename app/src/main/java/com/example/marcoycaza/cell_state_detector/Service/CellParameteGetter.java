@@ -1,4 +1,4 @@
-package com.example.marcoycaza.cell_state_detector;
+package com.example.marcoycaza.cell_state_detector.Service;
 
 import android.annotation.SuppressLint;
 import android.app.Application;

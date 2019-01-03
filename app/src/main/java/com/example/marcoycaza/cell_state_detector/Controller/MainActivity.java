@@ -1,11 +1,11 @@
-package com.example.marcoycaza.cell_state_detector;
+package com.example.marcoycaza.cell_state_detector.Controller;
 
 import android.Manifest;
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -17,15 +17,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.marcoycaza.cell_state_detector.Entity.Celda;
+import com.example.marcoycaza.cell_state_detector.R;
+import com.example.marcoycaza.cell_state_detector.Service.CeldaDb;
+import com.example.marcoycaza.cell_state_detector.Service.CellParameteGetter;
+import com.example.marcoycaza.cell_state_detector.Service.CellRegistered;
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     Handler handler;
     Boolean token;
+    private static final String DATABASE_NAME = "celdas_db";
+    private CeldaDb celdaDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +41,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         handler = new Handler(getMainLooper());
         token = false;
-
+        celdaDb = Room.databaseBuilder(getApplicationContext(),
+                CeldaDb.class, DATABASE_NAME)
+                .fallbackToDestructiveMigration()
+                .build();
         final Button button = findViewById(R.id.button);
         button.setText("START process");
 
@@ -59,6 +70,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void addCellSampleData(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<Celda> cellList = new ArrayList<>();
+                Celda celda =new Celda();
+                celda.setCellName("Celda_4G_Prueba");
+                celda.setEnodBId(75);
+                cellList.add(celda);
+                celdaDb.celdaRepository().insertCellArray(cellList);
+            }
+        }) .start();
+    }
+
     public void resetBar() {
 
         View bar = findViewById(R.id.powerBar);
@@ -75,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         View bar = findViewById(R.id.powerBar);
         LinearLayout vlBar = findViewById(R.id.vlBar);
 
-        float size = convertDpToPixel(38f,this);
+        float size = convertDpToPixel(49f,this);
 
         if (power <= -120) {
             bar.setBackgroundColor(getColor(R.color.color1));
