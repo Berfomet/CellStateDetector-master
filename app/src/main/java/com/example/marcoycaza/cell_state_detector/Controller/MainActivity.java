@@ -30,25 +30,39 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    Handler handler2;
     Handler handler;
     Boolean token;
     private static final String DATABASE_NAME = "celdas_db";
     private CeldaDb celdaDb;
+    CellRegistered cellToken;
 
+    //Constructor
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //inicialización de variables
         handler = new Handler(getMainLooper());
         token = false;
+        handler2=new Handler(getMainLooper());
+        final TextView tvDetails = findViewById(R.id.detailsNetTx);
         celdaDb = Room.databaseBuilder(getApplicationContext(),
                 CeldaDb.class, DATABASE_NAME)
                 .fallbackToDestructiveMigration()
-                .build();
+                .build(); //inicialización de la db de persistencia
+
+        //declaración de elementos visuales
         final Button button = findViewById(R.id.button);
+        final Button btnInfo = findViewById(R.id.btnInfo);
+
         button.setText("START process");
+        addCellSampleData();
 
-
+        //boton encargado de incializar o parar la ejecución del proceso encargado de recopilar la
+        //información de la celda.
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,9 +81,67 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //botón donde se inicializa la consulta la db y la muestra del nombre de la ultima celda captada.
+        btnInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //si el token es falso y existe un token en caché
+                if (!token&&cellToken!=null) {
+
+                    //es probable que se pueda omitir este try, por precaución se debería conservar.
+                    try {
+
+                        switch (cellToken.getType()) {
+                            case "UMTS": //aún no tengo data de prueba UMTS ni GSM
+                                break;
+
+                            case "LTE": // se inicializa la muestra de data de LTE
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //se hace el query cogiendo el enodBId guardado en el caché
+                                        //y consultando a la db para que devuelva el correspondiente
+                                        final Celda cellShown;
+                                        cellShown = celdaDb.celdaRepository().
+                                                fetchOneCeldabyEnodBId(cellToken.getCid());
+                                        //Se comprueba que la consulta haya retornado algo
+                                        if(cellShown!=null) {
+                                            handler2.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    tvDetails.setText(tvDetails.getText() + "Nombre Estación: " + cellShown.getCellName());
+                                                }
+                                            });
+                                        } else { //En caso no existe, se informa al usuario
+                                            Toast.makeText(MainActivity.this,
+                                                    "No cell found in the database",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }).start();
+                        }
+                        tvDetails.setText(tvDetails.getText() + "");
+                    } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //En caso el token es verdadero (la app sigue cogiendo data) se informa al usuario
+                } else if (token) {
+                    Toast.makeText(MainActivity.this,
+                            "Info reception must be at halt",
+                            Toast.LENGTH_SHORT).show();
+                }else{ //En caso no se haya recopilado nada de info se informa al usuario
+                    Toast.makeText(MainActivity.this,
+                            "No cell stored in cache",
+                            Toast.LENGTH_SHORT).show();
+                }
+                Log.i("tagge", "here from Main Activity");
+            }
+        });
 
     }
 
+    //metodo para añadir data de testeo en la db, ignorar. en el futuro se eliminará
     private void addCellSampleData(){
         new Thread(new Runnable() {
             @Override
@@ -84,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
         }) .start();
     }
 
+    //metodo para resetear la barra indicadora de la potencia de la celda.
     public void resetBar() {
 
         View bar = findViewById(R.id.powerBar);
@@ -95,11 +168,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Metodo que permite manipular la barra que muestra información visual sobre la potencia
     public void setBar(int power) {
 
         View bar = findViewById(R.id.powerBar);
         LinearLayout vlBar = findViewById(R.id.vlBar);
 
+        //en un futuro la idea es que no sea 49f, sino un valor que este en relación a la resolución
+        //de la pantalla del dispositivo
         float size = convertDpToPixel(49f,this);
 
         if (power <= -120) {
@@ -138,26 +214,38 @@ public class MainActivity extends AppCompatActivity {
         vlBar.requestLayout();
     }
 
+    //java parsea el codigo en pixeles, por lo tanto, es necesario tener un conversor de dpi a px
+    //para poder mantener una relación coherente entre el codigo y la resolución de la pantalla.
     public static float convertDpToPixel(float dp, Context context){
-        return dp * ((float) context.getResources().getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+        return dp * ((float) context.getResources().getDisplayMetrics().
+                densityDpi /
+                DisplayMetrics.DENSITY_DEFAULT);
     }
 
+    //Thread paralelo responsable de correr los metodos encargados de recopilar la información de
+    //de la celda a la que el celular se encuentra conectado
     public void CellInfoState() {
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while (true) {
+                            //cambiado while por do/while ya que el while presentaba problemas al
+                            //momento de para el loop. Por otra parte, do/while es una herramienta
+                            //mucho más facil de entender y de manipular.
+                            do {
 
                                 try {
                                     Thread.sleep(10);
 
-                                    //Declare final variables under the thread concept
-                                    final TelephonyManager simpleNetType = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-                                    final CellParameteGetter cellMonitor = new CellParameteGetter(getApplication());
+                                    //Se extraen los parametros de la celda mediante el metodo de
+                                    //la clase CellParameterGetter.
+                                    final CellParameteGetter cellMonitor =
+                                            new CellParameteGetter(getApplication());
                                     final CellRegistered celda = cellMonitor.action_monitor();
                                     handler.post(new Runnable() {
                                         @Override
@@ -167,6 +255,8 @@ public class MainActivity extends AppCompatActivity {
 
                                             if (celda != null) {
 
+                                                //en caso exista una celda, se muestran los valores
+                                                //en la pantalla
                                                 TextView tvType = findViewById(R.id.netTypeTx);
                                                 TextView tvDetails = findViewById(R.id.detailsNetTx);
 
@@ -185,8 +275,12 @@ public class MainActivity extends AppCompatActivity {
                                                 }
 
                                                 setBar(celda.getDbm());
+                                                cellToken = celda;
 
-                                            } else {
+                                            }
+
+                                            //en caso no exista celda, se muestra en pantalla
+                                            else {
                                                 Toast.makeText(MainActivity.this, "Cannot Get info rn", Toast.LENGTH_SHORT).show();
                                             }
 
@@ -200,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                                     Log.i("Tagged","toy en el thread");
                                 }
 
-                            }
+                            } while (token==true);
 
                         }
                     }).start();

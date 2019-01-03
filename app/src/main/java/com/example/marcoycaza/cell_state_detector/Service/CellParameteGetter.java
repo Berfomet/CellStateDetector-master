@@ -34,6 +34,8 @@ public class CellParameteGetter {
         try {
                 cReg.setType(getNetworkClass(telephonyManager.getNetworkType()));
 
+                //En base al tipo de tecnología que capta el celular de la celda a la que esta conectada
+            // te deriva a la parte donde se mostrará la información correspondiente
                 switch (cReg.getType()){
                     case "GSM":
 
@@ -81,6 +83,7 @@ public class CellParameteGetter {
         return cReg;
     }
 
+    //metodo para obtener el tipo de tecnologia a la cual tu celular esta conectado.
     private String getNetworkClass(int networkType) {
 
         switch (networkType) {
