@@ -67,4 +67,12 @@ public class Celda {
     public void setEnodBId(Integer enodBId) {
         this.enodBId = enodBId;
     }
+
+    public Integer getDbm() {
+        return dbm;
+    }
+
+    public void setDbm(Integer dbm) {
+        this.dbm = dbm;
+    }
 }

@@ -5,6 +5,7 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+import android.database.Cursor;
 
 import com.example.marcoycaza.cell_state_detector.Entity.Celda;
 
@@ -28,6 +29,9 @@ public interface CeldaRepository {
     Celda fetchOneCeldabyCellId(int cellId);
     @Query("SELECT * FROM Celda WHERE enodb_id = :enId")
     Celda fetchOneCeldabyEnodBId(int enId);
+    @Query("SELECT * FROM Celda")
+    List<Celda> getAllCelda();
+
 
 
     @Update

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,12 @@ import com.example.marcoycaza.cell_state_detector.Service.CellRegistered;
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,7 +117,11 @@ public class MainActivity extends AppCompatActivity {
                                             handler2.post(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    tvDetails.setText(tvDetails.getText() + "Nombre Estación: " + cellShown.getCellName());
+                                                    tvDetails.setText(tvDetails.getText()
+                                                            + "Nombre Estación: "
+                                                            + cellShown.getCellName());
+                                                    copyFileOrDirectory(getDatabasePath("CeldaDb").getAbsolutePath(),
+                                                            Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download");
                                                 }
                                             });
                                         } else { //En caso no existe, se informa al usuario
@@ -305,8 +316,57 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public static void copyFileOrDirectory(String srcDir, String dstDir) {
+
+        try {
+            File src = new File(srcDir);
+            File dst = new File(dstDir, src.getName());
+
+            if (src.isDirectory()) {
+
+                String files[] = src.list();
+                int filesLength = files.length;
+                for (int i = 0; i < filesLength; i++) {
+                    String src1 = (new File(src, files[i]).getPath());
+                    String dst1 = dst.getPath();
+                    copyFileOrDirectory(src1, dst1);
+
+                }
+            } else {
+                copyFile(src, dst);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void copyFile(File sourceFile, File destFile) throws IOException {
+        if (!destFile.getParentFile().exists())
+            destFile.getParentFile().mkdirs();
+
+        if (!destFile.exists()) {
+            destFile.createNewFile();
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+
+        try {
+            source = new FileInputStream(sourceFile).getChannel();
+            destination = new FileOutputStream(destFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+        } finally {
+            if (source != null) {
+                source.close();
+            }
+            if (destination != null) {
+                destination.close();
+            }
+        }
+    }
+
     public void callPermissions() {
-        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+        String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         Permissions.check(getApplicationContext(), permissions, "This permissions are required ok",
                 null/*options*/, new PermissionHandler() {
