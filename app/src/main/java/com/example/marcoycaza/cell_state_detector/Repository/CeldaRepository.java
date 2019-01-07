@@ -27,10 +27,11 @@ public interface CeldaRepository {
     Celda fetchOneCeldabyId(int id);
     @Query("SELECT * FROM Celda WHERE cell_id = :cellId")
     Celda fetchOneCeldabyCellId(int cellId);
-    @Query("SELECT * FROM Celda WHERE enodb_id = :enId")
-    Celda fetchOneCeldabyEnodBId(int enId);
     @Query("SELECT * FROM Celda")
     List<Celda> getAllCelda();
+    @Query("SELECT * FROM Celda")
+    public Cursor getCelda();
+
 
 
 

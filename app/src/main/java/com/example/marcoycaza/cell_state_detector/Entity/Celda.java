@@ -17,11 +17,9 @@ public class Celda {
     @ColumnInfo(name = "cell_name")
     private String cellName;
     @ColumnInfo(name="technology")
-    private String technology; //GSM, LTE, UMTS
+    private String technology; //GSM, LTE, WCDMA
     @ColumnInfo(name="cell_id")
     private Integer cellId;
-    @ColumnInfo(name = "enodb_id")
-    private Integer enodBId;
     @ColumnInfo(name = "potencia")
     private Integer dbm; //decibeles
 
@@ -58,14 +56,6 @@ public class Celda {
 
     public void setCellId(Integer cellId) {
         this.cellId = cellId;
-    }
-
-    public Integer getEnodBId() {
-        return enodBId;
-    }
-
-    public void setEnodBId(Integer enodBId) {
-        this.enodBId = enodBId;
     }
 
     public Integer getDbm() {

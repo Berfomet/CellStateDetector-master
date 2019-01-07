@@ -23,6 +23,7 @@ import com.example.marcoycaza.cell_state_detector.R;
 import com.example.marcoycaza.cell_state_detector.Service.CeldaDb;
 import com.example.marcoycaza.cell_state_detector.Service.CellParameteGetter;
 import com.example.marcoycaza.cell_state_detector.Service.CellRegistered;
+import com.example.marcoycaza.cell_state_detector.Service.ExcelFileHelper;
 import com.nabinbhandari.android.permissions.PermissionHandler;
 import com.nabinbhandari.android.permissions.Permissions;
 
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
                 callPermissions();
 
-                Log.i("tagge", "here from Main Activity");
+                Log.i("tagge", "here from btnStartProcess");
             }
         });
 
@@ -98,40 +99,46 @@ public class MainActivity extends AppCompatActivity {
 
                     //es probable que se pueda omitir este try, por precaución se debería conservar.
                     try {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (cellToken.getType()) {
+                                    case "UMTS": //aún no tengo data de prueba UMTS ni GSM
+                                    break;
 
-                        switch (cellToken.getType()) {
-                            case "UMTS": //aún no tengo data de prueba UMTS ni GSM
-                                break;
+                                    case "LTE": // se inicializa la muestra de data de LTE
 
-                            case "LTE": // se inicializa la muestra de data de LTE
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
                                         //se hace el query cogiendo el enodBId guardado en el caché
                                         //y consultando a la db para que devuelva el correspondiente
                                         final Celda cellShown;
                                         cellShown = celdaDb.celdaRepository().
-                                                fetchOneCeldabyEnodBId(cellToken.getCid());
+                                                fetchOneCeldabyCellId(cellToken.getCid());
                                         //Se comprueba que la consulta haya retornado algo
                                         if(cellShown!=null) {
+                                            ExcelFileHelper excelFileHelper = new ExcelFileHelper(getApplication());
+                                            excelFileHelper.generateExcelFile(celdaDb);
                                             handler2.post(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     tvDetails.setText(tvDetails.getText()
                                                             + "Nombre Estación: "
                                                             + cellShown.getCellName());
-                                                    copyFileOrDirectory(getDatabasePath("CeldaDb").getAbsolutePath(),
-                                                            Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download");
                                                 }
                                             });
                                         } else { //En caso no existe, se informa al usuario
-                                            Toast.makeText(MainActivity.this,
-                                                    "No cell found in the database",
-                                                    Toast.LENGTH_SHORT).show();
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    Toast.makeText(MainActivity.this,
+                                                            "No cell found in the database",
+                                                            Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
                                         }
-                                    }
-                                }).start();
-                        }
+                                }
+                            }
+                        }).start();
+
                         tvDetails.setText(tvDetails.getText() + "");
                     } catch (Exception e) {
                     e.printStackTrace();
@@ -141,12 +148,14 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,
                             "Info reception must be at halt",
                             Toast.LENGTH_SHORT).show();
-                }else{ //En caso no se haya recopilado nada de info se informa al usuario
+                } //else if () {
+
+                else { //En caso no se haya recopilado nada de info se informa al usuario
                     Toast.makeText(MainActivity.this,
                             "No cell stored in cache",
                             Toast.LENGTH_SHORT).show();
                 }
-                Log.i("tagge", "here from Main Activity");
+
             }
         });
 
@@ -160,7 +169,9 @@ public class MainActivity extends AppCompatActivity {
                 List<Celda> cellList = new ArrayList<>();
                 Celda celda =new Celda();
                 celda.setCellName("Celda_4G_Prueba");
-                celda.setEnodBId(75);
+                celda.setTechnology("LTE");
+                celda.setCellId(75);
+                celda.setDbm(-80);
                 cellList.add(celda);
                 celdaDb.celdaRepository().insertCellArray(cellList);
             }
@@ -316,7 +327,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public static void copyFileOrDirectory(String srcDir, String dstDir) {
+    /*public static void copyFileOrDirectory(String srcDir, String dstDir) {
 
         try {
             File src = new File(srcDir);
@@ -363,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                 destination.close();
             }
         }
-    }
+    }*/
 
     public void callPermissions() {
         String[] permissions = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE};

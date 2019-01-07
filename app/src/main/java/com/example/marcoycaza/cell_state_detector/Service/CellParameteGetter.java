@@ -88,26 +88,26 @@ public class CellParameteGetter {
 
         switch (networkType) {
 
-            case TelephonyManager.NETWORK_TYPE_GSM:
-            case TelephonyManager.NETWORK_TYPE_EDGE:
             case TelephonyManager.NETWORK_TYPE_GPRS:
-                return "GSM";
+            case TelephonyManager.NETWORK_TYPE_EDGE:
             case TelephonyManager.NETWORK_TYPE_CDMA:
+            case TelephonyManager.NETWORK_TYPE_1xRTT:
+            case TelephonyManager.NETWORK_TYPE_IDEN:
+                return "GSM";
+            case TelephonyManager.NETWORK_TYPE_UMTS:
             case TelephonyManager.NETWORK_TYPE_EVDO_0:
             case TelephonyManager.NETWORK_TYPE_EVDO_A:
             case TelephonyManager.NETWORK_TYPE_HSDPA:
-            case TelephonyManager.NETWORK_TYPE_HSPA:
             case TelephonyManager.NETWORK_TYPE_HSUPA:
-            case TelephonyManager.NETWORK_TYPE_UMTS:
+            case TelephonyManager.NETWORK_TYPE_HSPA:
+            case TelephonyManager.NETWORK_TYPE_EVDO_B:
+            case TelephonyManager.NETWORK_TYPE_EHRPD:
+            case TelephonyManager.NETWORK_TYPE_HSPAP:
                 return "WCDMA";
             /*
              * Above API level 7, make sure to set android:targetSdkVersion
              * to appropriate level to use these
              */
-            case TelephonyManager.NETWORK_TYPE_EHRPD: // API level 11
-            case TelephonyManager.NETWORK_TYPE_EVDO_B: // API level 9
-            case TelephonyManager.NETWORK_TYPE_HSPAP: // API level 13
-            case TelephonyManager.NETWORK_TYPE_IDEN: // API level 8
             case TelephonyManager.NETWORK_TYPE_LTE: // API level 11
                 return "LTE";
             // Unknown

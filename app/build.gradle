@@ -13,7 +13,7 @@ android {
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation":
-                                     "$projects ctDir/schemas".toString()]
+                                     "$projectDir/schemas".toString()]
 
             }
             buildTypes {
@@ -36,7 +36,7 @@ android {
             def room_version = "1.1.1"
             implementation "android.arch.persistence.room:runtime:$room_version"
             annotationProcessor "android.arch.persistence.room:compiler:$room_version"
-
+            implementation files('libs/jxl.jar') //libreria excel para java
 
         }
         apply plugin: 'com.android.application'

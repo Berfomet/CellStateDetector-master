@@ -11,7 +11,7 @@ import com.example.marcoycaza.cell_state_detector.Repository.CeldaRepository;
 
 //Clase que hace referencia a la base de datos de persistencia que esta usando la app
 
-@Database(entities = {Celda.class}, version = 1, exportSchema = false)
+@Database(entities = {Celda.class}, version = 3)
 public abstract class CeldaDb extends RoomDatabase {
 
     //Se tiene que crear un repositorio por cada entidad creada en la base de datos y
@@ -20,6 +20,8 @@ public abstract class CeldaDb extends RoomDatabase {
     public abstract CeldaRepository celdaRepository();
     private static final Object sLock = new Object();
     private static CeldaDb INSTANCE;
+
+
 
     public static CeldaDb getInstance(final Context context){
 
